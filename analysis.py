@@ -48,11 +48,11 @@ def iou(gt, pred):
                             except:
                                 data[gt[j][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
                                 cv2.rectangle(pred[j][7], (x1, y1), (x2, y2), (255, 0, 0), 2)
-                                cv2.putText(pred[j][7], "MID: {}".format(gt[i][6]), (x1, y1),
+                                cv2.putText(pred[j][7], "ID: {}".format(gt[i][6]), (x1, y1),
                                 cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
 
                                 cv2.rectangle(gt[i][8], (x1, y1), (x2, y2), (255, 0, 0), 2)
-                                cv2.putText(gt[i][8], "MID: {}".format(gt[i][6]), (x1, y1),
+                                cv2.putText(gt[i][8], "ID: {}".format(gt[i][6]), (x1, y1),
                                 cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
             except:
                 # result.append({i: "N/A"})
