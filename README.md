@@ -15,6 +15,11 @@
     <img alt="GitHub closed issues" src="https://img.shields.io/github/issues-closed/enfycius/IoU-for-Darknet"/>
 </p>
 
+## Table of contents
+
+  * [Quick Start](#quick-start)
+  * [License](#license)
+
 ## ⚡️ Quick Start
 
 First, create directories named iou, drive, test.
@@ -34,3 +39,7 @@ python3 analysis.py
 ```
 
 That's all you need to know to start:wink: !
+
+## :warning: License
+
+`Iou For Darknet` is free and open-source software licensed under the [GPL-3.0](https://github.com/enfycius/IoU-for-Darknet/blob/master/LICENSE).
