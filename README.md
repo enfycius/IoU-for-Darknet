@@ -17,8 +17,8 @@
 
 ## Table of contents
 
-  * [Quick Start](#quick-start)
-  * [License](#license)
+  * [Quick Start](#%EF%B8%8F-quick-start)
+  * [License](#warning-license)
 
 ## ⚡️ Quick Start
 
