@@ -4,3 +4,4 @@ test.png
 drive/*
 test/*
 iou/*
+.DS_Store
