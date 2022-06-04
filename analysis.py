@@ -137,8 +137,84 @@ def FN(fn, ft_gt, classes, iou, alpha):
     
     return fn[classes]
 
+def Precision(tp_t, fp_t):
+    precision = {}
+    tp_s = {}
+    fp_s = {}
+
+    for tp_f in tp_t:
+        for classes, tp_c in tp_f.items():
+            try:
+                tp_s[classes]
+            except:
+                tp_s[classes] = tp_c
+            else:
+                tp_s[classes] += tp_c
+
+    for fp_f in fp_t:
+        for classes, fp_c in fp_f.items():
+            try:
+                fp_s[classes]
+            except:
+                fp_s[classes] = fp_c
+            else:
+                fp_s[classes] += fp_c
+
+    for classes, tp_c in tp_s.items():
+        try:
+            precision[classes]
+        except:
+            precision[classes] = tp_c / (tp_c + fp_s[classes])
+    
+    return precision
+    
+def Recall(tp_t, fn_t):
+    recall = {}
+    tp_s = {}
+    fn_s = {}
+
+    for tp_f in tp_t:
+        for classes, tp_c in tp_f.items():
+            try:
+                tp_s[classes]
+            except:
+                tp_s[classes] = tp_c
+            else:
+                tp_s[classes] += tp_c
+
+    for fn_f in fn_t:
+        for classes, fn_c in fn_f.items():
+            try:
+                fn_s[classes]
+            except:
+                fn_s[classes] = fn_c
+            else:
+                fn_s[classes] += fn_c
+
+    for classes, tp_c in tp_s.items():
+        try:
+            recall[classes]
+        except:
+            recall[classes] = tp_c / (tp_c + fn_s[classes])
+    
+    return recall
+
+def F1(precision, recall):
+    f1 = {}
+
+    for classes, precision in precision.items():
+        try:
+            f1[classes]
+        except:
+            f1[classes] = (precision * recall[classes]) / ((precision + recall[classes]) / 2)
+
+    return f1
+
 with open("./result.json", "r") as result_json:
     result = json.load(result_json)
+    tp_t = []
+    fp_t = []
+    fn_t = []
 
     for i in range(0, len(result)):
         file_name = result[i]['filename'][13:-4]
@@ -190,6 +266,10 @@ with open("./result.json", "r") as result_json:
         iou_Result = iou(gt, pred)
         
         f = open("./iou/" + file_name + ".txt", 'w')
+
+        tp_t.append(iou_Result[0][0])
+        fp_t.append(iou_Result[0][1])
+        fn_t.append(iou_Result[0][2])
         
         f.write("Classes, TP: " + str(iou_Result[0][0]) + '\n')
         f.write("Classes, FP: " + str(iou_Result[0][1]) + '\n')
@@ -202,3 +282,10 @@ with open("./result.json", "r") as result_json:
 
         cv2.imwrite("./test/" + "test_" + file_name + ".png", image)
 
+    precision = Precision(tp_t, fp_t)
+    recall = Recall(tp_t, fn_t)
+    f1 = F1(precision, recall)
+
+    print(precision)
+    print(recall)
+    print(f1)
