@@ -5,6 +5,10 @@
 <h1 align="center">IoU For Darknet</h1>
 
 <p align="center">
+    Evaluate the Darknet Model for training results just by executing this.
+</p>
+
+<p align="center">
     <a title="License GNU" href="https://github.com/enfycius/IoU-for-Darknet/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-GPL v3-blue?style=flat-square"></a>
     <a title="Latest release" href="https://github.com/enfycius/IoU-for-Darknet/releases"><img src="https://img.shields.io/github/v/release/enfycius/IoU-for-Darknet?style=flat-square&color=28A745"></a>
     <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/enfycius/IoU-for-Darknet"/>
