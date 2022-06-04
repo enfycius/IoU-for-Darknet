@@ -1,45 +1,54 @@
 import numpy as np
 import cv2
 import json
+import math
 
 def iou(gt, pred):
     result = []
     data = {}
-    thres_hold = 0.086
+    thres_hold = 0.02
+    length = None
 
-    for i in range(0, len(gt)):
-        for j in range(0, len(gt)):
+    if(len(gt) < len(pred)):
+        length = len(pred)
+    else:
+        length = len(gt)
+
+    for i in range(0, length):
+        for j in range(0, length):
             try:
-                if((abs(gt[i][4] - pred[j][4])) < thres_hold and ((abs(gt[i][5] - pred[j][5])) < thres_hold)):
-                    try:
-                        x1 = max(gt[i][0], pred[j][0])
-                        y1 = max(gt[i][1], pred[j][1])
-                        x2 = min(gt[i][2], pred[j][2])
-                        y2 = min(gt[i][3], pred[j][3])
-
-                        inter_Area = max(0, x2 - x1 + 1) * max(0, y2 - y1 + 1)
-
-                        gt_Area = (gt[i][2] - gt[i][0] + 1) * (gt[i][3] - gt[i][1] + 1)
-                        pred_Area = (pred[j][2] - pred[j][0] + 1) * (pred[j][3] - pred[j][1] + 1)
-                    except:
-                        # result.append({i: "N/A"})
-                        pass
-                    else:
-                        if(inter_Area == 0.0):
-                            continue
+                if(math.sqrt((gt[i][4] - pred[j][4]) * (gt[i][4] - pred[j][4]) + (gt[i][5] - pred[j][5]) * (gt[i][5] - pred[j][5])) < thres_hold):
+                    if(gt[i][7] == pred[j][6]):
                         try:
-                            if(float(data[pred[j][6]]) <= inter_Area / float(gt_Area + pred_Area - inter_Area) * 100):
-                                data[pred[j][6]] = inter_Area / float(gt_Area + pred_Area - inter_Area) * 100
+                            x1 = max(gt[i][0], pred[j][0])
+                            y1 = max(gt[i][1], pred[j][1])
+                            x2 = min(gt[i][2], pred[j][2])
+                            y2 = min(gt[i][3], pred[j][3])
+
+                            inter_Area = max(0, x2 - x1 + 1) * max(0, y2 - y1 + 1)
+
+                            gt_Area = (gt[i][2] - gt[i][0] + 1) * (gt[i][3] - gt[i][1] + 1)
+                            pred_Area = (pred[j][2] - pred[j][0] + 1) * (pred[j][3] - pred[j][1] + 1)
                         except:
-                            data[pred[j][6]] = inter_Area / float(gt_Area + pred_Area - inter_Area) * 100
+                            # result.append({i: "N/A"})
+                            pass
+                        else:
+                            if(inter_Area == 0.0):
+                                continue
+                            try:
+                                if(float(data[gt[j][6]]) <= inter_Area / float(gt_Area + pred_Area - inter_Area) * 100):
+                                    data[gt[j][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
+                            except:
+                                data[gt[j][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
             except:
                 # result.append({i: "N/A"})
                 pass
             else:
                 pass
 
-    for id, iou in data.items():
-        result.append("{}: {}".format(id, str(iou) + "%\n"))
+    for id, dat in data.items():
+        for classes, iou in dat.items():
+            result.append("ID: {}, Classes: {}, IoU: {}".format(id, classes, str(iou) + "%\n"))
         
     return result
 
@@ -57,6 +66,7 @@ with open("./result.json", "r") as result_json:
         pred = []
 
         for j in range(0, len(result[i]['objects'])):
+            class_id = result[i]['objects'][j]['class_id']
             center_x = result[i]['objects'][j]['relative_coordinates']['center_x']
             center_y = result[i]['objects'][j]['relative_coordinates']['center_y']
             width = result[i]['objects'][j]['relative_coordinates']['width']
@@ -69,9 +79,10 @@ with open("./result.json", "r") as result_json:
 
             cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            gt.append([x1, y1, x2, y2, center_x, center_y])
+            pred.append([x1, y1, x2, y2, center_x, center_y, class_id])
         
         for j in range(0, len(data)):
+            class_id = int(data[j].split(' ')[0])
             center_x = float(data[j].split(' ')[1])
             center_y = float(data[j].split(' ')[2])
             width = float(data[j].split(' ')[3])
@@ -86,7 +97,7 @@ with open("./result.json", "r") as result_json:
             cv2.putText(image, "ID: {}".format(j), (x1, y1),
 		    cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 255), 2)
 
-            pred.append([x1, y1, x2, y2, center_x, center_y, j])
+            gt.append([x1, y1, x2, y2, center_x, center_y, j, class_id])
 
         sorted(gt, key=lambda gt: gt[4])
         sorted(pred, key=lambda pred: pred[4])
