@@ -38,8 +38,22 @@ def iou(gt, pred):
                             try:
                                 if(float(data[gt[j][6]]) <= inter_Area / float(gt_Area + pred_Area - inter_Area) * 100):
                                     data[gt[j][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
+                                    cv2.rectangle(pred[j][7], (x1, y1), (x2, y2), (255, 0, 0), 2)
+                                    cv2.putText(pred[j][7], "MID: {}".format(gt[i][6]), (x1, y1),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
+                                    cv2.rectangle(gt[i][8], (x1, y1), (x2, y2), (255, 0, 0), 2)
+                                    cv2.putText(gt[i][8], "MID: {}".format(gt[i][6]), (x1, y1),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)    
+
                             except:
                                 data[gt[j][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
+                                cv2.rectangle(pred[j][7], (x1, y1), (x2, y2), (255, 0, 0), 2)
+                                cv2.putText(pred[j][7], "MID: {}".format(gt[i][6]), (x1, y1),
+                                cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
+
+                                cv2.rectangle(gt[i][8], (x1, y1), (x2, y2), (255, 0, 0), 2)
+                                cv2.putText(gt[i][8], "MID: {}".format(gt[i][6]), (x1, y1),
+                                cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
             except:
                 # result.append({i: "N/A"})
                 pass
@@ -79,7 +93,7 @@ with open("./result.json", "r") as result_json:
 
             cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            pred.append([x1, y1, x2, y2, center_x, center_y, class_id])
+            pred.append([x1, y1, x2, y2, center_x, center_y, class_id, image])
         
         for j in range(0, len(data)):
             class_id = int(data[j].split(' ')[0])
@@ -97,7 +111,7 @@ with open("./result.json", "r") as result_json:
             cv2.putText(image, "ID: {}".format(j), (x1, y1),
 		    cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 255), 2)
 
-            gt.append([x1, y1, x2, y2, center_x, center_y, j, class_id])
+            gt.append([x1, y1, x2, y2, center_x, center_y, j, class_id, image])
 
         sorted(gt, key=lambda gt: gt[4])
         sorted(pred, key=lambda pred: pred[4])
