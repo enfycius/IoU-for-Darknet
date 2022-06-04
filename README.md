@@ -14,3 +14,23 @@
     <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/enfycius/IoU-for-Darknet"/>
     <img alt="GitHub closed issues" src="https://img.shields.io/github/issues-closed/enfycius/IoU-for-Darknet"/>
 </p>
+
+## ⚡️ Quick Start
+
+First, create directories named iou, drive, test.
+
+```bash
+mkdir iou drive test
+```
+
+Second, move source images(.png) and labels(.txt) to the drive directory you just created. 
+
+> :warning: The name has to be same as the image name except the extension. i.e, if an image is abc.png, label file is abc.txt.
+
+Next, just execute the following command.
+
+```bash
+python3 analysis.py
+```
+
+That's all you need to know to start:wink: !
