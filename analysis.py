@@ -5,9 +5,15 @@ import math
 
 def iou(gt, pred):
     result = []
+    items = []
+    tp = {}
+    fp = {}
+    fn = {}
     data = {}
-    thres_hold = 0.02
+    ft_gt = {}
+    thres_hold = 0.03
     length = None
+    alpha = 0.5
 
     if(len(gt) < len(pred)):
         length = len(pred)
@@ -36,17 +42,18 @@ def iou(gt, pred):
                             if(inter_Area == 0.0):
                                 continue
                             try:
-                                if(float(data[gt[j][6]]) <= inter_Area / float(gt_Area + pred_Area - inter_Area) * 100):
-                                    data[gt[j][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
+                                if(float(data[gt[i][6]]) <= inter_Area / float(gt_Area + pred_Area - inter_Area) * 100):
+                                    data[gt[i][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
                                     cv2.rectangle(pred[j][7], (x1, y1), (x2, y2), (255, 0, 0), 2)
                                     cv2.putText(pred[j][7], "MID: {}".format(gt[i][6]), (x1, y1),
                                     cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
+
                                     cv2.rectangle(gt[i][8], (x1, y1), (x2, y2), (255, 0, 0), 2)
                                     cv2.putText(gt[i][8], "MID: {}".format(gt[i][6]), (x1, y1),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)    
+                                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
 
                             except:
-                                data[gt[j][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
+                                data[gt[i][6]] = {gt[i][7] : inter_Area / float(gt_Area + pred_Area - inter_Area) * 100}
                                 cv2.rectangle(pred[j][7], (x1, y1), (x2, y2), (255, 0, 0), 2)
                                 cv2.putText(pred[j][7], "ID: {}".format(gt[i][6]), (x1, y1),
                                 cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
@@ -54,17 +61,81 @@ def iou(gt, pred):
                                 cv2.rectangle(gt[i][8], (x1, y1), (x2, y2), (255, 0, 0), 2)
                                 cv2.putText(gt[i][8], "ID: {}".format(gt[i][6]), (x1, y1),
                                 cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
+                                
             except:
                 # result.append({i: "N/A"})
                 pass
             else:
                 pass
 
+    for i in range(0, len(gt)):
+        try:
+            ft_gt[gt[i][7]]
+        except:
+            ft_gt[gt[i][7]] = 0
+            ft_gt[gt[i][7]] += 1
+        else:
+            ft_gt[gt[i][7]] += 1
+
     for id, dat in data.items():
         for classes, iou in dat.items():
-            result.append("ID: {}, Classes: {}, IoU: {}".format(id, classes, str(iou) + "%\n"))
-        
+            tp[classes] = TP(tp, classes, iou, alpha)
+            fp[classes] = FP(fp, classes, iou, alpha)
+            fn[classes] = FN(fn, ft_gt, classes, iou, alpha)
+         
+            items.append("ID: {}, Classes: {}, IoU: {}".format(id, classes, str(iou)))
+
+    # fn = FN(fn, ft_gt[:])
+
+    if pred == []:
+        for i in range(0, len(gt)):
+            try:
+                fn[gt[i][7]]
+            except:
+                fn[gt[i][7]] = 1
+            else:
+                fn[gt[i][7]] += 1
+
+    result.append([tp, fp, fn, items])
+    
     return result
+
+def TP(tp, classes, iou, alpha):
+    if(iou >= alpha):
+        try:
+            tp[classes] += 1
+        except:
+            tp[classes] = 1
+    else:
+        try:
+            tp[classes]
+        except:
+            tp[classes] = 0
+
+    return tp[classes]
+            
+def FP(fp, classes, iou, alpha):
+    if(iou < alpha):
+        try:
+            fp[classes] += 1
+        except:
+            fp[classes] = 1
+    else:
+        try:
+            fp[classes]
+        except:
+            fp[classes] = 0
+    
+    return fp[classes]
+
+def FN(fn, ft_gt, classes, iou, alpha):
+    if(iou >= alpha):
+        ft_gt[classes] -= 1
+        fn[classes] = ft_gt[classes]
+    else:
+        fn[classes] = ft_gt[classes]
+    
+    return fn[classes]
 
 with open("./result.json", "r") as result_json:
     result = json.load(result_json)
@@ -120,10 +191,11 @@ with open("./result.json", "r") as result_json:
         
         f = open("./iou/" + file_name + ".txt", 'w')
         
-        for i in range(0, len(iou_Result)):
-            f.write(str(iou_Result[i]))
+        f.write("Classes, TP: " + str(iou_Result[0][0]) + '\n')
+        f.write("Classes, FP: " + str(iou_Result[0][1]) + '\n')
+        f.write("Classes, FN: " + str(iou_Result[0][2]) + '\n')
+        f.write(str(iou_Result[0][3]) + '\n')
 
-        f.write('\n')
         f.write("GT Length: " + str(len(gt)) + ' ' + "Pred Length: " + str(len(pred)))
         
         f.close()
