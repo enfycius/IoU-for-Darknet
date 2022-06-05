@@ -11,7 +11,7 @@ def iou(gt, pred):
     fn = {}
     data = {}
     ft_gt = {}
-    thres_hold = 0.03
+    thres_hold = 0.04
     length = None
     alpha = 0.5
 
@@ -77,10 +77,13 @@ def iou(gt, pred):
         else:
             ft_gt[gt[i][7]] += 1
 
+    tp_prev = {}
+    fp_prev = {}
+
     for id, dat in data.items():
         for classes, iou in dat.items():
-            tp[classes] = TP(tp, classes, iou, alpha)
-            fp[classes] = FP(fp, classes, iou, alpha)
+            tp[classes], tp_prev[classes] = TP(tp, classes, tp_prev, iou, alpha)
+            fp[classes], fp_prev[classes] = FP(fp, classes, fp_prev, iou, alpha)
             fn[classes] = FN(fn, ft_gt, classes, iou, alpha)
          
             items.append("ID: {}, Classes: {}, IoU: {}".format(id, classes, str(iou)))
@@ -100,36 +103,50 @@ def iou(gt, pred):
     
     return result
 
-def TP(tp, classes, iou, alpha):
-    if(iou >= alpha):
+def TP(tp, classes, prev, iou, alpha):
+    try:
+        prev[classes]
+    except:
+        prev[classes] = 0
+
+    if(iou >= (alpha*100)):
         try:
             tp[classes] += 1
+            prev[classes] += 1
         except:
             tp[classes] = 1
+            prev[classes] += 1
     else:
         try:
             tp[classes]
         except:
-            tp[classes] = 0
+            tp[classes] = prev[classes]
 
-    return tp[classes]
+    return [tp[classes], prev[classes]]
             
-def FP(fp, classes, iou, alpha):
-    if(iou < alpha):
+def FP(fp, classes, prev, iou, alpha):
+    try:
+        prev[classes]
+    except:
+        prev[classes] = 0
+    
+    if(iou < (alpha*100)):
         try:
             fp[classes] += 1
+            prev[classes] += 1
         except:
             fp[classes] = 1
+            prev[classes] += 1
     else:
         try:
             fp[classes]
         except:
-            fp[classes] = 0
-    
-    return fp[classes]
+            fp[classes] = prev[classes]
+
+    return [fp[classes], prev[classes]]
 
 def FN(fn, ft_gt, classes, iou, alpha):
-    if(iou >= alpha):
+    if(iou >= (alpha*100)):
         ft_gt[classes] -= 1
         fn[classes] = ft_gt[classes]
     else:
@@ -289,3 +306,11 @@ with open("./result.json", "r") as result_json:
     print(precision)
     print(recall)
     print(f1)
+
+    f = open("./iou/" + "result" + ".txt", 'w')
+
+    f.write("Precision: " + str(precision) + '\n')
+    f.write("Recall: " + str(recall) + '\n')
+    f.write("F1: " + str(f1))
+
+    f.close()
